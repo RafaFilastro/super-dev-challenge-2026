@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1, viewport-fit=cover"
+    />
+    <meta name="theme-color" content="#102d34" />
+    <meta
+      name="description"
+      content="Karte Assist: orientações independentes e multilíngues sobre o Oktober Karte da Oktoberfest Blumenau 2026."
+    />
+    <title>Karte Assist — Oktoberfest Blumenau 2026</title>
+    <link rel="stylesheet" href="./style.css?v=5.1.0" />
+    <script src="./app.js?v=5.1.0" defer></script>
+  </head>
+  <body>
+    <!-- Entrada universal: SOMENTE nome, 4 idiomas e imagem do cartão. -->
+    <section
+      id="welcomeScreen"
+      class="welcome-screen entry-screen"
+      aria-labelledby="welcomeTitle"
+    >
+      <div class="entry-pane">
+        <h1 id="welcomeTitle" class="entry-title">Karte <span>Assist</span></h1>
+        <div
+          class="entry-choices"
+          role="group"
+          aria-label="Choose your language · Sprache wählen · Escolha seu idioma · Elige tu idioma"
+        >
+          <button
+            type="button"
+            class="entry-choice"
+            data-lang-select="pt"
+            lang="pt-BR"
+          >
+            Português
+          </button>
+          <button
+            type="button"
+            class="entry-choice"
+            data-lang-select="de"
+            lang="de"
+          >
+            Deutsch
+          </button>
+          <button
+            type="button"
+            class="entry-choice"
+            data-lang-select="es"
+            lang="es"
+          >
+            Español
+          </button>
+          <button
+            type="button"
+            class="entry-choice"
+            data-lang-select="en"
+            lang="en"
+          >
+            English
+          </button>
+        </div>
+      </div>
+      <div class="entry-photo-wrap">
+        <img
+          class="entry-photo"
+          src="./assets/karte-assist-ilustracao.webp"
+          alt="Ilustração conceitual de um cartão Karte Assist em um ambiente de festa. Não é o cartão oficial."
+          loading="eager"
+          width="1500"
+          height="1500"
+        />
+      </div>
+    </section>
+
+    <div id="chatScreen" class="app-shell" hidden>
+      <aside class="sidebar" aria-label="Informações sobre o assistente">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true">K<span>·</span></span>
+          <div>
+            <span class="brand-small">OKTOBERFEST BLUMENAU 2026</span
+            ><strong>Karte Assist</strong>
+          </div>
+        </div>
+        <div class="sidebar-content">
+          <div class="eyebrow" data-i18n="welcomeLabel">BOAS-VINDAS</div>
+          <h2 class="sidebar-headline">
+            <span data-i18n="sideLine1">Seu cartão.</span><br /><span
+              class="gold"
+              data-i18n="sideLine2"
+              >Sem dúvidas.</span
+            >
+          </h2>
+          <p data-i18n="sidebarDescription">
+            Entenda como adquirir, ativar, recarregar, usar e solicitar
+            reembolso do Oktober Karte.
+          </p>
+          <button
+            type="button"
+            id="sidebarLangBtn"
+            class="language-card"
+            aria-label="Alterar idioma"
+          >
+            <span class="globe" aria-hidden="true">◎</span
+            ><span class="language-card-info"
+              ><strong data-i18n="languageCard"
+                >Atendimento no seu idioma</strong
+              ><small id="selectedLanguageLabel">Português</small></span
+            ><span aria-hidden="true" class="lang-chevron">↗</span>
+          </button>
+          <div class="sidebar-section">
+            <span class="eyebrow" data-i18n="howTitle">COMO FUNCIONA</span>
+            <div class="feature">
+              <span class="feature-icon">01</span>
+              <div>
+                <strong data-i18n="howOneTitle">Você pergunta</strong
+                ><small data-i18n="howOneBody"
+                  >Escreva naturalmente no seu idioma.</small
+                >
+              </div>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">02</span>
+              <div>
+                <strong data-i18n="howTwoTitle">O agente consulta</strong
+                ><small data-i18n="howTwoBody"
+                  >Pesquisa guias e orientações verificadas.</small
+                >
+              </div>
+            </div>
+            <div class="feature">
+              <span class="feature-icon">03</span>
+              <div>
+                <strong data-i18n="howThreeTitle">Você confere</strong
+                ><small data-i18n="howThreeBody"
+                  >Confira as respostas e as fontes.</small
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="sidebar-bottom">
+          <span class="status-dot"></span
+          ><span data-i18n="independent">Protótipo acadêmico independente</span>
+        </div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <div class="topbar-title">
+            <span class="avatar">K</span>
+            <div>
+              <strong>Karte Assist</strong
+              ><small data-i18n="subtitle"
+                >Atendimento informativo · 2026</small
+              >
+            </div>
+          </div>
+          <div class="topbar-actions">
+            <span class="live-pill"
+              ><span class="status-dot"></span
+              ><span data-i18n="ready">Pronto para ajudar</span></span
+            >
+            <button type="button" id="presentationBtn" class="icon-text-btn" data-i18n-title="presentationTitle" title="Modo apresentação" aria-pressed="false"><span aria-hidden="true">▣</span> <span data-i18n="presentation">Modo TV</span></button>
+            <button type="button" id="languageBtn" class="icon-text-btn">
+              <span aria-hidden="true">◎</span>
+              <span id="topLanguageLabel">Português</span></button
+            ><button
+              type="button"
+              id="clearBtn"
+              class="clear-btn"
+              data-i18n="newChat"
+            >
+              Nova conversa
+            </button>
+          </div>
+        </header>
+        <section class="chat-panel" aria-label="Conversa com o agente">
+          <div
+            class="chat-messages"
+            id="messages"
+            role="log"
+            aria-live="polite"
+            aria-relevant="additions"
+          >
+            <div class="intro" id="intro">
+              <div class="intro-icon" aria-hidden="true">K<span>·</span></div>
+              <div class="intro-kicker" data-i18n="introKicker">
+                SEU ASSISTENTE DO OKTOBER KARTE
+              </div>
+              <h1 data-i18n="introTitle">
+                Como posso ajudar com seu Oktober Karte?
+              </h1>
+              <p data-i18n="introDescription">
+                Pergunte sobre recargas, saldo, reembolsos e problemas.
+                Consultarei informações e mostrarei as fontes utilizadas.
+              </p>
+              <div class="suggestions" id="suggestions"></div>
+            </div>
+          </div>
+          <div class="composer-area">
+            <p class="alert" id="errorBanner" role="alert" hidden></p>
+            <form id="chatForm" class="composer">
+              <label class="sr-only" for="question" data-i18n="inputLabel"
+                >Digite sua dúvida sobre o Oktober Karte</label
+              ><textarea
+                id="question"
+                rows="1"
+                maxlength="500"
+                data-i18n-placeholder="inputPlaceholder"
+                placeholder="Escreva sua dúvida sobre o Oktober Karte..."
+                autocomplete="off"
+                required
+              ></textarea
+              ><button
+                id="sendBtn"
+                type="submit"
+                class="send-btn"
+                aria-label="Enviar pergunta"
+                data-i18n-aria-label="send"
+                data-i18n-title="send"
+                title="Enviar pergunta"
+              >
+                <svg
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 12h15m-6-6 6 6-6 6"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </svg>
+              </button>
+            </form>
+            <div class="composer-foot">
+              <span data-i18n="inputHint"
+                >Enter para enviar · Shift+Enter para nova linha</span
+              ><span id="charCount">0/500</span>
+            </div>
+            <p class="safety-note" data-i18n="disclaimer">
+              Protótipo não oficial. Não informe CPF, senhas ou dados bancários.
+              Não consulta saldos pessoais nem executa reembolsos.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="languageDialog" class="dialog-backdrop" hidden>
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dialogTitle"
+        class="language-dialog"
+      >
+        <div class="dialog-heading">
+          <div>
+            <small data-i18n="dialogEyebrow">PREFERÊNCIAS</small>
+            <h2 id="dialogTitle" data-i18n="dialogTitle">Escolha o idioma</h2>
+          </div>
+          <button
+            type="button"
+            id="closeDialogBtn"
+            class="dialog-close"
+            aria-label="Fechar"
+          >
+            ×
+          </button>
+        </div>
+        <p data-i18n="dialogNote">
+          Você pode alterar o idioma sem perder sua conversa. As próximas
+          respostas seguirão a nova escolha.
+        </p>
+        <div class="dialog-grid">
+          <button type="button" data-dialog-lang="pt">Português</button
+          ><button type="button" data-dialog-lang="de">Deutsch</button
+          ><button type="button" data-dialog-lang="es">Español</button
+          ><button type="button" data-dialog-lang="en">English</button>
+        </div>
+      </section>
+    </div>
+  </body>
+</html>
