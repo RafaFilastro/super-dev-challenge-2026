@@ -4,64 +4,213 @@
     <meta charset="utf-8" />
     <meta
       name="viewport"
-      content="width=device-width, initial-scale=1, viewport-fit=cover"
+      content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content"
     />
-    <meta name="theme-color" content="#102d34" />
+    <meta
+      name="theme-color"
+      content="#102d34"
+      media="(prefers-color-scheme: dark)"
+    />
+    <meta
+      name="theme-color"
+      content="#f7f8f5"
+      media="(prefers-color-scheme: light)"
+    />
     <meta
       name="description"
       content="Karte Assist: orientações independentes e multilíngues sobre o Oktober Karte da Oktoberfest Blumenau 2026."
     />
     <title>Karte Assist — Oktoberfest Blumenau 2026</title>
-    <link rel="stylesheet" href="./style.css?v=5.1.0" />
-    <script src="./app.js?v=5.1.0" defer></script>
+    <link rel="stylesheet" href="./style.css?v=7.0.35" />
+    <link rel="stylesheet" href="./messenger.css?v=7.0.35" />
+    <script src="./app.js?v=7.0.35" defer></script>
   </head>
   <body>
-    <!-- Entrada universal: SOMENTE nome, 4 idiomas e imagem do cartão. -->
+    <!-- Entrada universal: frase, 4 idiomas e imagem do cartão. -->
     <section
       id="welcomeScreen"
-      class="welcome-screen entry-screen"
+      class="entry-screen"
       aria-labelledby="welcomeTitle"
     >
       <div class="entry-pane">
-        <h1 id="welcomeTitle" class="entry-title">Karte <span>Assist</span></h1>
-        <div
-          class="entry-choices"
-          role="group"
-          aria-label="Choose your language · Sprache wählen · Escolha seu idioma · Elige tu idioma"
-        >
-          <button
-            type="button"
-            class="entry-choice"
-            data-lang-select="pt"
-            lang="pt-BR"
+        <div class="entry-content">
+          <p class="entry-kicker">
+            <span class="entry-kicker-dot" aria-hidden="true"></span>
+            Oktoberfest Blumenau · 2026
+          </p>
+          <h1 id="welcomeTitle" class="entry-title">
+            <span data-i18n="entryTitleBefore">Tudo sobre o seu</span>
+            <em>Oktober Karte</em
+            ><span data-i18n="entryTitleAfter">, no seu idioma.</span>
+          </h1>
+          <p class="entry-prompt" aria-hidden="true">
+            <svg
+              class="entry-prompt-icon"
+              viewBox="0 0 24 24"
+              focusable="false"
+            >
+              <g fill="none" stroke="currentColor" stroke-width="1.6">
+                <circle cx="12" cy="12" r="9" />
+                <path
+                  d="M3 12h18M12 3c2.5 2.6 3.8 5.6 3.8 9s-1.3 6.4-3.8 9c-2.5-2.6-3.8-5.6-3.8-9S9.5 5.6 12 3z"
+                />
+              </g>
+            </svg>
+            <span class="entry-prompt-cycle">
+              <span lang="pt-BR">Escolha seu idioma</span>
+              <span lang="de">Sprache wählen</span>
+              <span lang="es">Elige tu idioma</span>
+              <span lang="en">Choose your language</span>
+            </span>
+          </p>
+          <div
+            class="entry-choices"
+            role="group"
+            aria-label="Escolha seu idioma · Sprache wählen · Elige tu idioma · Choose your language"
           >
-            Português
-          </button>
-          <button
-            type="button"
-            class="entry-choice"
-            data-lang-select="de"
-            lang="de"
-          >
-            Deutsch
-          </button>
-          <button
-            type="button"
-            class="entry-choice"
-            data-lang-select="es"
-            lang="es"
-          >
-            Español
-          </button>
-          <button
-            type="button"
-            class="entry-choice"
-            data-lang-select="en"
-            lang="en"
-          >
-            English
-          </button>
+            <button
+              type="button"
+              class="entry-choice"
+              data-lang-select="pt"
+              lang="pt-BR"
+            >
+              <img
+                class="entry-flag"
+                src="./assets/flags/br.svg"
+                alt=""
+                width="30"
+                height="20"
+              />
+              <span class="entry-choice-text">
+                <span class="entry-choice-name">Português</span>
+                <span class="entry-choice-hint" aria-hidden="true"
+                  >Começar</span
+                >
+              </span>
+              <svg
+                class="entry-arrow"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M4 10h11m-4.5-4.5L15 10l-4.5 4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="entry-choice"
+              data-lang-select="de"
+              lang="de"
+            >
+              <img
+                class="entry-flag"
+                src="./assets/flags/de.svg"
+                alt=""
+                width="30"
+                height="20"
+              />
+              <span class="entry-choice-text">
+                <span class="entry-choice-name">Deutsch</span>
+                <span class="entry-choice-hint" aria-hidden="true"
+                  >Starten</span
+                >
+              </span>
+              <svg
+                class="entry-arrow"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M4 10h11m-4.5-4.5L15 10l-4.5 4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="entry-choice"
+              data-lang-select="es"
+              lang="es"
+            >
+              <img
+                class="entry-flag"
+                src="./assets/flags/es.svg"
+                alt=""
+                width="30"
+                height="20"
+              />
+              <span class="entry-choice-text">
+                <span class="entry-choice-name">Español</span>
+                <span class="entry-choice-hint" aria-hidden="true"
+                  >Empezar</span
+                >
+              </span>
+              <svg
+                class="entry-arrow"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M4 10h11m-4.5-4.5L15 10l-4.5 4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+            <button
+              type="button"
+              class="entry-choice"
+              data-lang-select="en"
+              lang="en"
+            >
+              <img
+                class="entry-flag"
+                src="./assets/flags/us.svg"
+                alt=""
+                width="30"
+                height="20"
+              />
+              <span class="entry-choice-text">
+                <span class="entry-choice-name">English</span>
+                <span class="entry-choice-hint" aria-hidden="true">Start</span>
+              </span>
+              <svg
+                class="entry-arrow"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path
+                  d="M4 10h11m-4.5-4.5L15 10l-4.5 4.5"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
+        <p class="entry-footnote" data-i18n="entryFootnote">
+          Protótipo acadêmico independente · não oficial
+        </p>
       </div>
       <div class="entry-photo-wrap">
         <img
@@ -77,13 +226,6 @@
 
     <div id="chatScreen" class="app-shell" hidden>
       <aside class="sidebar" aria-label="Informações sobre o assistente">
-        <div class="brand">
-          <span class="brand-mark" aria-hidden="true">K<span>·</span></span>
-          <div>
-            <span class="brand-small">OKTOBERFEST BLUMENAU 2026</span
-            ><strong>Karte Assist</strong>
-          </div>
-        </div>
         <div class="sidebar-content">
           <div class="eyebrow" data-i18n="welcomeLabel">BOAS-VINDAS</div>
           <h2 class="sidebar-headline">
@@ -109,6 +251,32 @@
                 >Atendimento no seu idioma</strong
               ><small id="selectedLanguageLabel">Português</small></span
             ><span aria-hidden="true" class="lang-chevron">↗</span>
+          </button>
+          <button
+            type="button"
+            class="sidebar-clear-btn sidebar-home-btn"
+            data-go-home
+            data-i18n="home"
+            data-i18n-title="homeTitle"
+            title="Voltar à tela inicial"
+          >
+            <svg
+              class="sidebar-home-icon"
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="m3.5 10.5 8.5-7 8.5 7M5.5 9v11h13V9M9.5 20v-6h5v6" />
+            </svg>
+            <span data-i18n="home">Início</span>
+          </button>
+          <button
+            type="button"
+            id="sidebarClearBtn"
+            class="sidebar-clear-btn"
+            data-clear-chat
+            data-i18n="newChat"
+          >
+            Nova conversa
           </button>
           <div class="sidebar-section">
             <span class="eyebrow" data-i18n="howTitle">COMO FUNCIONA</span>
@@ -163,17 +331,82 @@
               ><span class="status-dot"></span
               ><span data-i18n="ready">Pronto para ajudar</span></span
             >
-            <button type="button" id="presentationBtn" class="icon-text-btn" data-i18n-title="presentationTitle" title="Modo apresentação" aria-pressed="false"><span aria-hidden="true">▣</span> <span data-i18n="presentation">Modo TV</span></button>
-            <button type="button" id="languageBtn" class="icon-text-btn">
-              <span aria-hidden="true">◎</span>
-              <span id="topLanguageLabel">Português</span></button
-            ><button
+            <button
+              type="button"
+              class="mobile-toolbar-btn home-toolbar-btn"
+              data-go-home
+              data-i18n-aria-label="homeTitle"
+              data-i18n-title="homeTitle"
+              title="Voltar à tela inicial"
+            >
+              <span class="mobile-toolbar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path d="m3.5 10.5 8.5-7 8.5 7M5.5 9v11h13V9M9.5 20v-6h5v6" />
+                </svg>
+              </span>
+              <span class="mobile-toolbar-copy">
+                <small data-i18n="home">Início</small>
+              </span>
+            </button>
+            <!-- MODO TV DESATIVADO: equipe decide depois.
+            <button
+              type="button"
+              id="presentationBtn"
+              class="icon-text-btn"
+              data-i18n-title="presentationTitle"
+              title="Modo apresentação"
+              aria-pressed="false"
+            >
+              <span aria-hidden="true">▣</span>
+              <span data-i18n="presentation">Modo TV</span>
+            </button>
+            -->
+            <button
+              type="button"
+              id="languageBtn"
+              class="mobile-toolbar-btn language-toolbar-btn"
+              data-i18n-aria-label="dialogTitle"
+            >
+              <span class="mobile-toolbar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <circle cx="12" cy="12" r="8.5" />
+                  <path
+                    d="M3.5 12h17M12 3.5c2.3 2.5 3.5 5.3 3.5 8.5S14.3 18 12 20.5C9.7 18 8.5 15.2 8.5 12S9.7 6 12 3.5z"
+                  />
+                </svg>
+              </span>
+              <span class="mobile-toolbar-copy">
+                <small data-i18n="languageActionLabel">Idioma</small>
+                <strong id="topLanguageLabel">Português</strong>
+              </span>
+              <svg
+                class="mobile-toolbar-chevron"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+                focusable="false"
+              >
+                <path d="m7.5 4.5 5 5.5-5 5.5" />
+              </svg>
+            </button>
+            <button
               type="button"
               id="clearBtn"
-              class="clear-btn"
-              data-i18n="newChat"
+              class="mobile-toolbar-btn new-chat-toolbar-btn"
+              data-clear-chat
+              data-i18n-aria-label="newChat"
             >
-              Nova conversa
+              <span class="mobile-toolbar-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" focusable="false">
+                  <path
+                    d="M19 14a4 4 0 0 1-4 4H8l-4 3v-7a4 4 0 0 1-1-2.6V8a4 4 0 0 1 4-4h8a4 4 0 0 1 4 4"
+                  />
+                  <path d="M19 3v6M16 6h6" />
+                </svg>
+              </span>
+              <span class="mobile-toolbar-copy">
+                <small data-i18n="newChatHint">Recomeçar</small>
+                <strong data-i18n="newChat">Nova conversa</strong>
+              </span>
             </button>
           </div>
         </header>
@@ -185,21 +418,61 @@
             aria-live="polite"
             aria-relevant="additions"
           >
+            <div class="conversation-date" id="conversationDate"></div>
             <div class="intro" id="intro">
-              <div class="intro-icon" aria-hidden="true">K<span>·</span></div>
-              <div class="intro-kicker" data-i18n="introKicker">
-                SEU ASSISTENTE DO OKTOBER KARTE
+              <div class="intro-chat-row">
+                <span class="intro-chat-avatar" aria-hidden="true">K</span>
+                <div class="intro-chat-body">
+                  <span class="intro-chat-name">Karte Assist</span>
+                  <div class="intro-message">
+                    <p class="intro-hello" data-i18n="chatHello">Olá! 👋</p>
+                    <p data-i18n="chatWelcome">
+                      Sou o Karte Assist. Posso ajudar com recarga, saldo e
+                      reembolso do Oktober Karte. O que gostaria de saber?
+                    </p>
+                    <span
+                      class="intro-message-time"
+                      id="welcomeMessageTime"
+                    ></span>
+                  </div>
+                </div>
               </div>
-              <h1 data-i18n="introTitle">
-                Como posso ajudar com seu Oktober Karte?
-              </h1>
-              <p data-i18n="introDescription">
-                Pergunte sobre recargas, saldo, reembolsos e problemas.
-                Consultarei informações e mostrarei as fontes utilizadas.
-              </p>
+              <div class="intro-quick-label" data-i18n="quickQuestions">
+                Ou escolha uma pergunta:
+              </div>
               <div class="suggestions" id="suggestions"></div>
             </div>
+            <section
+              id="followUpSuggestions"
+              class="follow-up-suggestions"
+              data-i18n-aria-label="followUpTitle"
+              aria-label="Sugestões para continuar"
+              aria-live="polite"
+              hidden
+            >
+              <div class="follow-up-heading">
+                <span aria-hidden="true">✦</span>
+                <strong id="followUpHeading" data-i18n="followUpTitle"
+                  >Talvez você também queira saber</strong
+                >
+              </div>
+              <div id="followUpList" class="follow-up-list"></div>
+            </section>
           </div>
+          <button
+            type="button"
+            id="scrollToBottomBtn"
+            class="scroll-to-bottom-btn"
+            aria-label="Ir para o final da conversa"
+            data-i18n-aria-label="scrollToBottom"
+            title="Ir para o final da conversa"
+            data-i18n-title="scrollToBottom"
+            hidden
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+              <path d="M12 4v15m-6-6 6 6 6-6" />
+            </svg>
+          </button>
           <div class="composer-area">
             <p class="alert" id="errorBanner" role="alert" hidden></p>
             <form id="chatForm" class="composer">
@@ -242,13 +515,18 @@
             </form>
             <div class="composer-foot">
               <span data-i18n="inputHint"
-                >Enter para enviar · Shift+Enter para nova linha</span
+                >Enter para enviar · SHIFT + ENTER para nova linha</span
               ><span id="charCount">0/500</span>
             </div>
-            <p class="safety-note" data-i18n="disclaimer">
-              Protótipo não oficial. Não informe CPF, senhas ou dados bancários.
-              Não consulta saldos pessoais nem executa reembolsos.
-            </p>
+            <details class="privacy-disclosure">
+              <summary data-i18n="privacySummary">
+                Privacidade e segurança
+              </summary>
+              <p class="safety-note" data-i18n="disclaimer">
+                Protótipo não oficial. Não informe CPF, senhas ou dados
+                bancários. Não consulta saldos pessoais nem executa reembolsos.
+              </p>
+            </details>
           </div>
         </section>
       </main>
@@ -261,7 +539,7 @@
         class="language-dialog"
       >
         <div class="dialog-heading">
-          <div>
+          <div class="dialog-title-copy">
             <small data-i18n="dialogEyebrow">PREFERÊNCIAS</small>
             <h2 id="dialogTitle" data-i18n="dialogTitle">Escolha o idioma</h2>
           </div>
@@ -279,10 +557,74 @@
           respostas seguirão a nova escolha.
         </p>
         <div class="dialog-grid">
-          <button type="button" data-dialog-lang="pt">Português</button
-          ><button type="button" data-dialog-lang="de">Deutsch</button
-          ><button type="button" data-dialog-lang="es">Español</button
-          ><button type="button" data-dialog-lang="en">English</button>
+          <button
+            type="button"
+            data-dialog-lang="pt"
+            aria-label="Português, Brasil"
+          >
+            <img
+              class="dialog-flag"
+              src="./assets/flags/br.svg"
+              alt=""
+              width="34"
+              height="23"
+            />
+            <span class="dialog-language-copy"
+              ><strong>Português</strong><small>Brasil</small></span
+            >
+            <span class="dialog-language-check" aria-hidden="true">✓</span>
+          </button>
+          <button
+            type="button"
+            data-dialog-lang="de"
+            aria-label="Deutsch, Deutschland"
+          >
+            <img
+              class="dialog-flag"
+              src="./assets/flags/de.svg"
+              alt=""
+              width="34"
+              height="23"
+            />
+            <span class="dialog-language-copy"
+              ><strong>Deutsch</strong><small>Deutschland</small></span
+            >
+            <span class="dialog-language-check" aria-hidden="true">✓</span>
+          </button>
+          <button
+            type="button"
+            data-dialog-lang="es"
+            aria-label="Español, España"
+          >
+            <img
+              class="dialog-flag"
+              src="./assets/flags/es.svg"
+              alt=""
+              width="34"
+              height="23"
+            />
+            <span class="dialog-language-copy"
+              ><strong>Español</strong><small>España</small></span
+            >
+            <span class="dialog-language-check" aria-hidden="true">✓</span>
+          </button>
+          <button
+            type="button"
+            data-dialog-lang="en"
+            aria-label="English, United States"
+          >
+            <img
+              class="dialog-flag"
+              src="./assets/flags/us.svg"
+              alt=""
+              width="34"
+              height="23"
+            />
+            <span class="dialog-language-copy"
+              ><strong>English</strong><small>United States</small></span
+            >
+            <span class="dialog-language-check" aria-hidden="true">✓</span>
+          </button>
         </div>
       </section>
     </div>
