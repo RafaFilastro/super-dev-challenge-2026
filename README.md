@@ -8,7 +8,7 @@
 
   Um assistente virtual multilíngue que ajuda visitantes a encontrar informações sobre o cartão de consumo, com respostas em linguagem natural e referências documentais.
 
-  [**🌐 Acessar a demonstração**](https://wonderful-cookies-8d6961.netlify.app/) · [**🧠 Entender a arquitetura**](#-como-funciona) · [**💻 Executar localmente**](#-executando-o-frontend)
+  [**🌐 Acessar a demonstração**](https://oktober-karte.netlify.app) · [**🧠 Entender a arquitetura**](#-como-funciona) · [**💻 Executar localmente**](#-executando-o-frontend)
 
   ![HTML5](https://img.shields.io/badge/HTML5-E34F26?logo=html5&logoColor=white)
   ![CSS3](https://img.shields.io/badge/CSS3-1572B6?logo=css&logoColor=white)
