@@ -1,8 +1,8 @@
 // Oktober Karte Assist — Supabase Edge Function (Super Dev Challenge 2026)
 // SPEC_DO_AGENTE.md: seções 3, 4, 5 e 6.
-// Revisão 22/10/2026 V11: comunicação concisa, controle de estilo e CPF explícito nos reembolsos.
-// Publicar como função "oktober-karte-assist" no editor do Supabase.
-// Não colocar segredos neste arquivo. Secrets: ANTHROPIC_API_KEY, ANTHROPIC_MODEL.
+// Versão V12.2 Gemini (24/10/2026): migrado do index.ts real V11.1; preserva regras, fontes e interface; utiliza limite global via PostgreSQL.
+// Publicar como função "oktober-karte-assist" no editor do Supabase após aplicar 01_LIMITADOR_PUBLICO.sql.
+// NÃO colocar chaves neste arquivo. Secrets: GEMINI_API_KEY, LIMITE_POR_HORA (opcional, padrão 20), GEMINI_MODEL (opcional).
 // As tabelas public.ok_conhecimento e public.ok_fontes foram carregadas previamente.
 
 const CORS = {
@@ -11,11 +11,16 @@ const CORS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const API_KEY = Deno.env.get("ANTHROPIC_API_KEY");
-const MODEL = Deno.env.get("ANTHROPIC_MODEL") || "claude-haiku-4-5";
+const API_KEY = Deno.env.get("GEMINI_API_KEY");
+const MODEL = Deno.env.get("GEMINI_MODEL") || "gemini-3.5-flash-lite";
 const DB_URL = Deno.env.get("SUPABASE_URL");
 const DB_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-const LIMITE_POR_HORA = Math.min(100, Math.max(1, Number(Deno.env.get("LIMITE_POR_HORA") || 60)));
+// Limite global de atendimentos. Configure LIMITE_POR_HORA=20 nos Secrets.
+const limiteHoraConfigurado = Number(Deno.env.get("LIMITE_POR_HORA") || "20");
+const LIMITE_POR_HORA = Number.isSafeInteger(limiteHoraConfigurado)
+  ? Math.min(100, Math.max(1, limiteHoraConfigurado))
+  : 20;
+const LIMITE_POR_DIA = 100; // Por 24 horas, independente da cota do Gemini.
 const MAX_RODADAS = 4;
 
 const CATEGORIAS = [
@@ -504,16 +509,39 @@ const NOMES_IDIOMAS: Record<string, string> = {
   es: "espanhol (es)", en: "inglês (en)",
 };
 
-async function chamarClaude(mensagens: unknown[], forcarFerramenta: boolean, idiomaPreferido: string, ferramentaObrigatoria?: string, focoAtual?: string, estiloPuro?: "reformular" | "formatacao" | "contestacao" | "frustracao" | null) {
-  const resposta = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: {
-      "x-api-key": API_KEY!, "anthropic-version": "2023-06-01",
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: MODEL, max_tokens: 950,
-      system: `${INSTRUCOES}${estiloPuro === "reformular"
+// Converte os esquemas das ferramentas do Claude para as declarações aceitas pelo Gemini.
+function esquemaGemini(valor: unknown): JsonRecord {
+  const s = comoObjeto(valor);
+  const convertido: JsonRecord = {};
+  if (typeof s.type === "string") convertido.type = s.type.toUpperCase();
+  if (typeof s.description === "string") convertido.description = s.description;
+  if (Array.isArray(s.enum)) convertido.enum = s.enum;
+  if (Array.isArray(s.required)) convertido.required = s.required;
+  if (typeof s.minimum === "number") convertido.minimum = s.minimum;
+  if (typeof s.maximum === "number") convertido.maximum = s.maximum;
+  if (s.properties && typeof s.properties === "object") {
+    convertido.properties = Object.fromEntries(
+      Object.entries(comoObjeto(s.properties)).map(([nome, esquema]) => [nome, esquemaGemini(esquema)]),
+    );
+  }
+  return convertido;
+}
+
+type ParteGemini = JsonRecord;
+type MensagemGemini = { role: "user" | "model"; parts: ParteGemini[] };
+const FERRAMENTAS_GEMINI = FERRAMENTAS.map((f) => ({
+  name: f.name,
+  description: f.description,
+  parameters: esquemaGemini(f.input_schema),
+}));
+
+async function chamarGemini(
+  mensagens: MensagemGemini[], forcarFerramenta: boolean,
+  idiomaPreferido: string, ferramentaObrigatoria?: string, focoAtual?: string,
+  estiloPuro?: "reformular" | "formatacao" | "contestacao" | "frustracao" | null,
+): Promise<JsonRecord> {
+  if (!/^[a-z0-9.-]+$/.test(MODEL)) throw new Error("Nome de modelo Gemini inválido.");
+  const instrucao = `${INSTRUCOES}${estiloPuro === "reformular"
         ? "\nPEDIDO SOMENTE DE ESTILO: reescreva a última resposta do assistente de forma mais natural ou divertida, mantendo EXATAMENTE os fatos e ressalvas da resposta anterior. Não acrescente preço, prazo, condição, documento ou alternativa. Se a última resposta não estiver disponível, apenas diga que ajustará o estilo nas próximas respostas. Não recite fatos não solicitados."
         : estiloPuro === "formatacao"
           ? "\nPEDIDO SOMENTE DE FORMATAÇÃO: reconheça brevemente o pedido e confirme que vai escrever mais claro, sem travessões ou quebras em excesso. NÃO repita toda a orientação anterior."
@@ -525,32 +553,45 @@ async function chamarClaude(mensagens: unknown[], forcarFerramenta: boolean, idi
         ? `\nPREFERÊNCIA DE IDIOMA: o visitante selecionou ${NOMES_IDIOMAS[idiomaPreferido]}. Responda nesse idioma, mesmo se a pergunta estiver em outra língua. A preferência NÃO muda os fatos.`
         : ""}${focoAtual
         ? `\nFOCO DESTA PERGUNTA: ${focoAtual}. Responda especificamente a isso. Não reapresente orientações genéricas de CPF quando a pessoa perguntou sobre prazo, método de pagamento, local ou valor mínimo.`
-        : ""}`,
-      tools: FERRAMENTAS,
-      ...(estiloPuro
-        ? { tool_choice: { type: "none" } }
-        : ferramentaObrigatoria
-          ? { tool_choice: { type: "tool", name: ferramentaObrigatoria } }
-          : forcarFerramenta ? { tool_choice: { type: "any" } } : {}),
-      messages: mensagens,
-    }),
-  });
+        : ""}`;
+  const modo = estiloPuro ? "NONE" : forcarFerramenta ? "ANY" : "AUTO";
+  const resposta = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
+      method: "POST",
+      headers: { "x-goog-api-key": API_KEY!, "Content-Type": "application/json" },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: instrucao }] },
+        contents: mensagens,
+        tools: [{ functionDeclarations: FERRAMENTAS_GEMINI }],
+        toolConfig: {
+          functionCallingConfig: {
+            mode: modo,
+            ...(modo === "ANY" && ferramentaObrigatoria
+              ? { allowedFunctionNames: [ferramentaObrigatoria] } : {}),
+          },
+        },
+        generationConfig: { maxOutputTokens: 2048, thinkingConfig: { thinkingLevel: "MEDIUM" } },
+      }),
+    },
+  );
   if (!resposta.ok) {
-    console.error("Erro de provedor Claude", resposta.status);
-    throw new Error(`Não foi possível consultar a IA (HTTP ${resposta.status}). Verifique o modelo e a chave nos Secrets.`);
+    // Não incluir resposta HTTP nem chave em logs: provedor pode devolver detalhes sensíveis.
+    console.error("Falha no provedor Gemini", resposta.status);
+    if (resposta.status === 429) throw new Error("GEMINI_QUOTA_429");
+    throw new Error(`GEMINI_HTTP_${resposta.status}`);
   }
-  return resposta.json();
+  return comoObjeto(await resposta.json());
 }
 
 async function executarAgente(pergunta: string, historico: unknown[], idiomaPreferido: string) {
-  const mensagens: Array<{ role: string; content: unknown }> = [];
+  const mensagens: MensagemGemini[] = [];
   for (const item of historico.slice(-6)) {
     const m = comoObjeto(item);
     if ((m.role === "user" || m.role === "assistant") && typeof m.content === "string") {
-      mensagens.push({ role: m.role, content: limparDadosPessoais(m.content).slice(0, m.role === "assistant" ? 1500 : 500) });
+      mensagens.push({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: limparDadosPessoais(m.content).slice(0, m.role === "assistant" ? 1500 : 500) }] });
     }
   }
-  mensagens.push({ role: "user", content: limparDadosPessoais(pergunta) });
+  mensagens.push({ role: "user", parts: [{ text: limparDadosPessoais(pergunta) }] });
   const anteriorUsuario = [...historico].reverse()
     .map((item) => comoObjeto(item))
     .find((m) => m.role === "user" && typeof m.content === "string");
@@ -573,59 +614,69 @@ async function executarAgente(pergunta: string, historico: unknown[], idiomaPref
   const estiloPuro = pedidoSobreEstilo(pergunta);
   // Para perguntas sobre SACAR/RETIRAR DINHEIRO, a primeira consulta precisa
   // obrigatoriamente passar pelo motor determinístico de REEMBOLSO.
-  // O Claude escolhe os parâmetros; a Edge Function valida valor e data.
+  // O Gemini propõe os parâmetros; a Edge Function valida valor e data.
   const precisaConsultarReembolso = mencionaReembolso ||
     /\b(?:retirar\s+(?:meu\s+)?dinheiro|converter\s+(?:o\s+)?saldo\s+(?:em|para)\s+(?:dinheiro|cash)|receber\s+(?:em\s+)?dinheiro)\b/i.test(perguntaNormalizada);
   const passos: unknown[] = [];
   const referencias = new Map<string, Evidencia>();
 
   for (let rodada = 0; rodada < MAX_RODADAS; rodada++) {
-    const resposta = comoObjeto(await chamarClaude(
-      mensagens,
-      rodada === 0 && !estiloPuro,
+    const retorno = await chamarGemini(
+      mensagens, rodada === 0 && !estiloPuro,
       idiomaPreferido,
       !estiloPuro && rodada === 0 && precisaConsultarReembolso ? "consultar_reembolso"
         : !estiloPuro && rodada === 0 && temaRecarga ? "consultar_recarga" : undefined,
-      focoRecargaAtual,
-      estiloPuro,
-    ));
-    const blocos = Array.isArray(resposta.content) ? resposta.content as JsonRecord[] : [];
-    mensagens.push({ role: "assistant", content: blocos });
-    if (resposta.stop_reason !== "tool_use") {
-      const texto = blocos.filter((b) => b.type === "text").map((b) => String(b.text || "")).join("\n");
-      // Preserva a resposta contextual do Claude. Na V8, TODAS as perguntas de
-      // recarga sem CPF conhecido eram sobrescritas pelo mesmo texto fixo!
-      // Só há fallback em eventual conflito com a regra de segurança "sem CPF online".
-      const textoFinal = texto
-        ? (temaRecarga ? corrigirApenasConflitoOnlineSemCpf(
-            texto, focoRecargaAtual, situacaoCpf, idiomaResposta,
-          ) : texto)
-        : "Não foi possível elaborar uma resposta.";
+      focoRecargaAtual, estiloPuro,
+    );
+    const candidatos = Array.isArray(retorno.candidates) ? retorno.candidates : [];
+    const candidato = comoObjeto(candidatos[0]);
+    const conteudo = comoObjeto(candidato.content);
+    const partes = Array.isArray(conteudo.parts) ? conteudo.parts.map((p) => comoObjeto(p)) : [];
+    if (!partes.length) {
+      // Não responder com regras financeiras inventadas se o provedor bloquear a resposta.
+      throw new Error("GEMINI_RESPOSTA_VAZIA");
+    }
+    // PRESERVAR cada parte e thoughtSignature original, exigidas no Gemini 3.
+    mensagens.push({ role: "model", parts: partes });
+    const chamadas = partes.filter((p) => p.functionCall);
+    if (!chamadas.length) {
+      if (rodada === 0 && !estiloPuro) {
+        // Primeira rodada exige ferramenta: falhar com segurança em caso de violação.
+        throw new Error("GEMINI_SEM_FERRAMENTA");
+      }
+      const texto = partes.filter((p) => typeof p.text === "string").map((p) => String(p.text)).join("\n").trim();
+      if (!texto) throw new Error("GEMINI_SEM_TEXTO");
+      const textoFinal = temaRecarga
+        ? corrigirApenasConflitoOnlineSemCpf(texto, focoRecargaAtual, situacaoCpf, idiomaResposta)
+        : texto;
       return { resposta: ajustarPontuacaoDaResposta(textoFinal), passos, fontes: [...referencias.values()] };
     }
-    const resultados: unknown[] = [];
-    for (const chamada of blocos.filter((b) => b.type === "tool_use")) {
+    const respostasDasFerramentas: ParteGemini[] = [];
+    for (const parte of chamadas) {
+      const chamada = comoObjeto(parte.functionCall);
       const nome = String(chamada.name || "");
-      const argumentos = comoObjeto(chamada.input);
-      // O parametro do modelo nunca prevalece sobre uma declaracao explicita
-      // de CPF feita pelo visitante na pergunta ou na conversa recente.
+      const argumentos = comoObjeto(chamada.args);
       if (nome === "consultar_recarga" || nome === "consultar_reembolso") argumentos.possui_cpf = situacaoCpf;
-      const idChamada = String(chamada.id || "");
+      const idChamada = typeof chamada.id === "string" ? chamada.id : undefined;
       passos.push({ fase: "tool_use", ferramenta: nome, entrada: argumentos });
+      let resultadoFormatado: JsonRecord;
       try {
         if (!Object.hasOwn(EXECUTORES, nome)) throw new Error("Ferramenta não permitida.");
         const resultado = await EXECUTORES[nome](argumentos);
         const novas = evidenciasDe(resultado);
         for (const ev of novas) referencias.set(ev.id, ev);
         passos.push({ fase: "tool_result", ferramenta: nome, ok: true, evidencias: novas.map((e) => e.id) });
-        resultados.push({ type: "tool_result", tool_use_id: idChamada, content: JSON.stringify(resultado) });
+        resultadoFormatado = { resultado };
       } catch (erro) {
         const detalhe = erro instanceof Error ? erro.message : "Consulta indisponível";
         passos.push({ fase: "tool_result", ferramenta: nome, ok: false, erro: detalhe });
-        resultados.push({ type: "tool_result", tool_use_id: idChamada, is_error: true, content: detalhe });
+        resultadoFormatado = { erro: detalhe };
       }
+      respostasDasFerramentas.push({
+        functionResponse: { name: nome, ...(idChamada ? { id: idChamada } : {}), response: resultadoFormatado },
+      });
     }
-    mensagens.push({ role: "user", content: resultados });
+    mensagens.push({ role: "user", parts: respostasDasFerramentas });
   }
   // Ao atingir o limite, não trocar novamente a pergunta por uma orientação
   // genérica de CPF: explicar o limite e orientar o atendimento presencial.
@@ -635,12 +686,22 @@ async function executarAgente(pergunta: string, historico: unknown[], idiomaPref
   };
 }
 
-async function dentroDoLimite(): Promise<boolean> {
-  const desde = new Date(Date.now() - 3600_000).toISOString();
-  const resultado = await banco(
-    `ok_execucoes?select=id&criado_em=gte.${encodeURIComponent(desde)}&limit=${LIMITE_POR_HORA}`,
-  ) as unknown[];
-  return resultado.length < LIMITE_POR_HORA;
+// Limitador global ATÔMICO no PostgreSQL. Requer instalar SQL adicional pelo SQL Editor.
+// Registra a tentativa antes de chamar a IA para impedir estouro em acessos concorrentes.
+async function reservarConsulta(): Promise<number | null> {
+  const id = await banco("rpc/ok_reservar_consulta_publica", {
+    method: "POST",
+    body: JSON.stringify({ p_limite_hora: LIMITE_POR_HORA, p_limite_dia: LIMITE_POR_DIA }),
+  });
+  return typeof id === "number" && Number.isSafeInteger(id) ? id : null;
+}
+
+async function finalizarConsulta(id: number, dados: JsonRecord): Promise<void> {
+  await banco(`ok_execucoes?id=eq.${id}`, {
+    method: "PATCH",
+    headers: { Prefer: "return=minimal" },
+    body: JSON.stringify(dados),
+  });
 }
 
 Deno.serve(async (req: Request) => {
@@ -660,26 +721,31 @@ Deno.serve(async (req: Request) => {
     ? corpo.idioma_preferido : "";
   const inicio = Date.now();
   try {
-    if (!(await dentroDoLimite())) return responderJson({ erro: "Limite global de consultas por hora atingido." }, 429);
+    const idReserva = await reservarConsulta();
+    if (idReserva === null) return responderJson({ erro: "Limite gratuito da demonstração atingido. Tente novamente mais tarde." }, 429);
     const resultado = await executarAgente(pergunta, historico, idiomaPreferido);
     const duracao_ms = Date.now() - inicio;
     const fontes = resultado.fontes as Evidencia[];
-    // Registro mínimo, sem pergunta ou resposta bruta. Não depende de CPF nem de login.
-    await banco("ok_execucoes", {
-      method: "POST",
-      headers: { Prefer: "return=minimal" },
-      body: JSON.stringify({
+    // Atualiza a mesma reserva. Nunca armazena a pergunta, documentos ou resposta bruta.
+    try {
+      await finalizarConsulta(idReserva, {
         resultado: "respondido", duracao_ms,
-        categoria: "consulta", idioma: idiomaPreferido || null,
+        categoria: "demo_publica", idioma: idiomaPreferido || null,
         ids_evidencia: fontes.map((f) => f.id),
-      }),
-    });
+      });
+    } catch (erroRegistro) {
+      console.error("Não foi possível finalizar a métrica de uso");
+    }
     return responderJson({
       ...resultado, duracao_ms,
       aviso: "Protótipo informativo não oficial. Não acessa cartões individuais nem solicita reembolsos.",
     });
   } catch (erro) {
-    console.error("oktober-karte-assist: falha", erro instanceof Error ? erro.message : "desconhecida");
-    return responderJson({ erro: "Não foi possível concluir a consulta. Verifique os logs da função." }, 500);
+    const detalhe = erro instanceof Error ? erro.message : "desconhecida";
+    console.error("oktober-karte-assist: falha", detalhe);
+    if (detalhe === "GEMINI_QUOTA_429") {
+      return responderJson({ erro: "O modelo gratuito atingiu o limite de uso. Tente novamente mais tarde." }, 429);
+    }
+    return responderJson({ erro: "Não foi possível concluir a consulta. Confira os logs da função." }, 500);
   }
 });
