@@ -15,7 +15,7 @@
   ![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?logo=javascript&logoColor=black)
   ![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
   ![Supabase](https://img.shields.io/badge/Supabase-3FCF8E?logo=supabase&logoColor=white)
-  ![Claude](https://img.shields.io/badge/IA-Claude-65558F)
+  ![Gemini](https://img.shields.io/badge/IA-Gemini-4285F4)
   ![Netlify](https://img.shields.io/badge/Netlify-00C7B7?logo=netlify&logoColor=white)
 
   **Projeto acadêmico independente**, desenvolvido no contexto do Super Dev Challenge 2026. Não é um serviço oficial da Oktoberfest Blumenau.
@@ -55,7 +55,7 @@ Em vez de procurar respostas em diferentes páginas, o visitante escolhe seu idi
 flowchart TD
     A[Visitante] --> B[Site no Netlify]
     B -->|Pergunta + idioma + histórico recente| C[Supabase Edge Function]
-    C -->|Solicitação| D[Claude API]
+    C -->|Solicitação| D[Gemini API]
     D -->|tool_use| C
     C -->|Consulta e aplicação de regras| E[(PostgreSQL no Supabase)]
     E -->|Guias e evidências| C
@@ -70,7 +70,7 @@ flowchart TD
 | Hospedagem | Netlify | Publicação do frontend estático |
 | Backend | Supabase Edge Functions + TypeScript/Deno | Validação, execução de ferramentas e regras de negócio |
 | Dados | PostgreSQL (Supabase) | Guias, fontes, histórico e registros técnicos |
-| Inteligência artificial | Claude API (Anthropic) | Interpretação da intenção, escolha de ferramentas e redação |
+| Inteligência artificial | Gemini API (Google) | Interpretação da intenção, escolha de ferramentas e redação |
 
 ### Ferramentas do agente
 
@@ -117,7 +117,7 @@ Abra `http://localhost:5500` no navegador.
 
 ## 🔐 Segurança e limites
 
-- A chave `ANTHROPIC_API_KEY` fica nos **Secrets** da Edge Function, nunca no JavaScript público.
+- A chave `GEMINI_API_KEY` fica nos **Secrets** da Edge Function, nunca no JavaScript público.
 - O agente **não acessa saldos individuais**, não bloqueia cartões e não solicita nem executa reembolsos.
 - O frontend orienta o visitante a não compartilhar CPF completo, senhas ou dados bancários.
 - Informações históricas não devem ser apresentadas automaticamente como procedimentos confirmados de 2026.
